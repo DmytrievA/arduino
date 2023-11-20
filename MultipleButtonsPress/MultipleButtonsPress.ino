@@ -1,67 +1,57 @@
-int buttonPins[] = {2,3,4,5};
-int lastButtonStates[] = {0,0,0,0};
-int currentButtonStates[] = {0,0,0,0};
+//made using tutorial at https://playground.arduino.cc/Main/KeypadTutorial/
+//utilizes Keypad.h library https://playground.arduino.cc/Code/Keypad/
+//lights LED when certain buttons are pressed
 
-int ledPins[] = {8,9,10};
+#include <Keypad.h>
+
+int ledPins[] = {2,3,4};//LED pins
+bool ledPinsState[] = {false, false, false}; //current LED states
+
+const byte ROWS = 4; // four rows
+const byte COLS = 4; // four columns
+
+// Map the buttons to an array for the Keymap instance
+char hexaKeys[ROWS][COLS] = {
+  {'1', '2', '3', 'A'},
+  {'4', '5', '6', 'B'},
+  {'7', '8', '9', 'C'},
+  {'*', '0', '#', 'D'}
+};
+
+byte colPins[ROWS] = {8, 7, 6, 5}; // Pins used for the rows of the keypad
+byte rowPins[COLS] = {12,11,10,9}; // Pins used for the columns of the keypad
+
+// Initialise the Keypad
+Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS);
 
 void setup() {
-  for(int i=0;i<4;i++)
-  {
-    pinMode(buttonPins[i], INPUT);
-  }
   for(int i=0;i<3;i++)
   {
     pinMode(ledPins[i], OUTPUT);
   }
-  Serial.begin(9600);
+  Serial.begin(9600);   // Initialise the serial monitor
 }
 
 void loop() {
-  for(int i=0;i<4;i++)
-  {
-    currentButtonStates[i] = debounce(lastButtonStates[i], buttonPins[i]);
-    if(lastButtonStates[i] == 0 && currentButtonStates[i] == 1) {
-      for(int j=0;j<4;j++)
-      {
-        Serial.print(j); Serial.print(": "); Serial.print(currentButtonStates[j]);
-        Serial.println("\t");
-      }
-      doButtons(i);
-      delay(400);
-    }
-    lastButtonStates[i] = currentButtonStates[i];
-  }
-}
+  // Read the pushed button
+  char button = customKeypad.getKey();
 
-void doButtons(int pressedButton) {
-  switch (pressedButton) {
-    case 0:
-      digitalWrite(ledPins[0], HIGH);
-      break;
-    case 1:
-      digitalWrite(ledPins[1], HIGH);
-      break;
-    case 2:
-      digitalWrite(ledPins[2], HIGH);
-      break;
-    case 3: 
-      for(int i=0;i<3;i++)
-      {
-        digitalWrite(ledPins[i], LOW);
-      }
-      break;
+  if (button) {
+    Serial.println(button);
   }
 
-  Serial.print("button pressed: ");
-  Serial.println(pressedButton);
-}
-
-//to read of noise
-boolean debounce(boolean state, int pin) {
-  boolean current = digitalRead(pin);//get current value
-  if(state != current) {//if button state was changed
-    delay(5);//some wait to ensure that is intended
-    current = digitalRead(pin);//reread value
-    return current;//return more accurate value
+  switch(button) {
+    case '1':
+      ledPinsState[0] = !ledPinsState[0];
+      digitalWrite(ledPins[0], ledPinsState[0]);
+      break;
+    case '2':
+      ledPinsState[1] = !ledPinsState[1];
+      digitalWrite(ledPins[1], ledPinsState[1]);
+      break;
+    case '3':
+      ledPinsState[2] = !ledPinsState[2];
+      digitalWrite(ledPins[2], ledPinsState[2]);
+      break;
   }
 }
