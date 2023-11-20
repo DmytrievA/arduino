@@ -10,13 +10,23 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  bool newState = digitalRead(button);
+  // constantly read button value
+  bool newState = debounce(state);
   if(newState == HIGH && state == LOW)
-  {
-    ledState = !ledState;
-    digitalWrite(LED_BUILTIN, ledState);
-    Serial.println("state changed");
+  {//if button was pressed
+    ledState = !ledState;//reverce LED state
+    digitalWrite(LED_BUILTIN, ledState);//set LED state
+    Serial.println("state changed");//print for debug
   }
-  state = newState;
+  state = newState;//save button state
+}
+
+//to read of noise
+boolean debounce(boolean state) {
+  boolean current = digitalRead(button);//get current value
+  if(state != current) {//if button state was changed
+    delay(5);//some wait to ensure that is intended
+    current = digitalRead(button);//reread value
+    return current;//return more accurate value
+  }
 }
